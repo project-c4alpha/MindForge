@@ -1,0 +1,33 @@
+{
+  "connections": [
+    {
+      "name": "pg_local",
+      "driver": "postgres",
+      "host": "localhost",
+      "port": 5432,
+      "username": "postgres",
+      "password": "postgres",
+      "database": "postgres",
+      "sslMode": "disable"
+    },
+    {
+      "name": "mysql_local",
+      "driver": "mysql",
+      "host": "127.0.0.1",
+      "port": 3306,
+      "username": "root",
+      "password": "root",
+      "database": "mysql"
+    },
+    {
+      "name": "mysql_with_tls",
+      "driver": "mysql",
+      "host": "remote.example.com",
+      "port": 3306,
+      "username": "user",
+      "password": "password",
+      "database": "mydb",
+      "tls": "true"
+    }
+  ]
+}

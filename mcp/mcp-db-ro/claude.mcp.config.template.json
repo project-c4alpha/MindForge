@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "db-ro": {
+      "command": "/ABS/PATH/TO/mcps/services/mcp-db-ro/dist/mcp-db-ro",
+      "args": ["--db", "/ABS/PATH/TO/mcps/services/mcp-db-ro/config.json"]
+    }
+  }
+}

@@ -1,0 +1,90 @@
+# General
+.DS_Store
+*.log
+*.tmp
+*.swp
+*~
+
+# IDE
+.vscode/
+.idea/
+*.iml
+.fleet/
+
+# Build outputs
+bin/
+build/
+dist/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Go
+*.test
+*.out
+go.work
+go.work.sum
+vendor/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn-integrity
+package-lock.json
+yarn.lock
+
+# Rust
+target/
+Cargo.lock
+**/*.rs.bk
+
+# Config files (may contain secrets)
+config.json
+*.env
+.env.local
+.env.*.local
+credentials.json
+secrets.json
+
+# Keep example configs
+!config.example.json
+!.env.example
+!*.template.json
+
+# MCP specific
+*.mcp.config.json
+!*.mcp.config.template.json
+
+# Test coverage
+coverage/
+*.coverprofile
+htmlcov/
+.coverage
+.coverage.*
+
+# OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
