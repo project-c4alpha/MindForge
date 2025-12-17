@@ -98,9 +98,15 @@ mindforge/
 │       ├── database-design/SKILL.md
 │       ├── tech-documentation/SKILL.md
 │       └── frontend-development/SKILL.md
+├── templates/           # Templates for creating new resources
+│   ├── agent-template-en.md      # English agent template
+│   ├── agent-template-zhcn.md    # Chinese agent template
+│   ├── skill-template-en.md      # English skill template
+│   └── skill-template-zhcn.md    # Chinese skill template
 ├── mcp/                 # MCP services collection
 │   ├── _template/
 │   └── mcp-*/
+├── Makefile             # Build and resource management
 ├── setup-claude.sh      # Claude Code setup script (supports --lang parameter)
 └── docs/               # Documentation
     └── README-zhcn.md  # Chinese README
@@ -108,38 +114,104 @@ mindforge/
 
 ## 🛠️ Usage
 
+### Quick Start
+
+```bash
+# Show all available commands
+make help
+```
+
 ### List Resources
 
 ```bash
 # List all MCP services
 make list-mcp
 
-# List all Agents
+# List all Agents (shows both English and Chinese)
 make list-agents
 
-# List all Skills
+# List all Skills (shows both English and Chinese)
 make list-skills
 ```
 
-### Create Resources
+### Create Resources from Templates
+
+MindForge provides ready-to-use templates for creating new agents and skills. Templates are available in both English and Chinese.
+
+#### Create a New Agent
+
+```bash
+# Create an English agent (default)
+make init-agent AGENT=my-agent
+
+# Create a Chinese agent
+make init-agent AGENT=my-agent LANG=zh-cn
+
+# Create an English agent (explicit)
+make init-agent AGENT=my-agent LANG=en
+```
+
+**What you get:**
+- A complete agent file with frontmatter (name, description, tools, model, skills)
+- Structured sections for role definition, principles, and best practices
+- Code templates and quality checklists
+- Ready to customize for your specific use case
+
+**After creation:**
+1. Edit `agents/{lang}/{agent-name}.md` to customize the agent
+2. Update the name, description, and system prompt
+3. Specify which tools and skills the agent should use
+4. Run `./setup-claude.sh --lang={lang}` to activate
+
+#### Create a New Skill
+
+```bash
+# Create an English skill (default)
+make init-skill SKILL=my-skill
+
+# Create a Chinese skill
+make init-skill SKILL=my-skill LANG=zh-cn
+
+# Create an English skill (explicit)
+make init-skill SKILL=my-skill LANG=en
+```
+
+**What you get:**
+- A complete skill file with frontmatter (name, description, allowed-tools)
+- Structured sections for expertise, principles, and best practices
+- Code patterns, templates, and troubleshooting guides
+- Quality checklists and decision frameworks
+- Ready to use across multiple agents
+
+**After creation:**
+1. Edit `skills/{lang}/{skill-name}/SKILL.md` to define capabilities
+2. Add domain-specific knowledge and best practices
+3. Include code templates and common patterns
+4. Run `./setup-claude.sh --lang={lang}` to activate
+
+#### Create a New MCP Service
 
 ```bash
 # Create a new MCP service
 make init-mcp SERVICE=mcp-foo
-
-# Create a new Agent
-make init-agent AGENT=my-agent
-
-# Create a new Skill
-make init-skill SKILL=my-skill
 ```
 
-### Add Skills to Agents
+**After creation:**
+1. Navigate to `mcp/mcp-foo/`
+2. Implement your MCP service
+3. Add a Makefile with `build`, `test`, and `clean` targets
+
+### Manage Skills in Agents
 
 ```bash
-# Add a skill to an agent
-make add-skill AGENT=my-agent SKILL=my-skill
+# Add a skill to an agent (English)
+make add-skill AGENT=my-agent SKILL=testing
+
+# Add a skill to a Chinese agent
+make add-skill AGENT=my-agent SKILL=testing LANG=zh-cn
 ```
+
+This automatically updates the agent's frontmatter to include the specified skill.
 
 ### Build and Test
 
@@ -147,21 +219,17 @@ make add-skill AGENT=my-agent SKILL=my-skill
 # Build a single MCP service
 make build SERVICE=mcp-foo
 
-# Build a single Agent
-make build AGENT=my-agent
-
-# Build a single Skill
-make build SKILL=my-skill
-
-# Build all resources
+# Build all MCP services
 make build-all
 
-# Test all resources
+# Test all MCP services
 make test-all
 
-# Clean all resources
+# Clean all MCP service artifacts
 make clean-all
 ```
+
+**Note:** Agents and skills are markdown files and don't require building.
 
 ## 📋 Resource Conventions
 

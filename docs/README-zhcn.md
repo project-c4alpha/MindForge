@@ -98,9 +98,15 @@ mindforge/
 │       ├── database-design/SKILL.md
 │       ├── tech-documentation/SKILL.md
 │       └── frontend-development/SKILL.md
+├── templates/           # 创建新资源的模板
+│   ├── agent-template-en.md      # 英文 agent 模板
+│   ├── agent-template-zhcn.md    # 中文 agent 模板
+│   ├── skill-template-en.md      # 英文 skill 模板
+│   └── skill-template-zhcn.md    # 中文 skill 模板
 ├── mcp/                 # MCP 服务集合
 │   ├── _template/
 │   └── mcp-*/
+├── Makefile             # 构建和资源管理
 ├── setup-claude.sh      # Claude Code 设置脚本（支持 --lang 参数）
 └── docs/                # 文档
     └── README-zhcn.md   # 中文 README
@@ -108,60 +114,122 @@ mindforge/
 
 ## 🛠️ 使用方法
 
-### 查看资源
+### 快速开始
 
-```sh
+```bash
+# 显示所有可用命令
+make help
+```
+
+### 列出资源
+
+```bash
 # 列出所有 MCP 服务
 make list-mcp
 
-# 列出所有 Agents
+# 列出所有 Agents（显示英文和中文）
 make list-agents
 
-# 列出所有 Skills
+# 列出所有 Skills（显示英文和中文）
 make list-skills
 ```
 
-### 创建资源
+### 从模板创建资源
 
-```sh
-# 创建新的 MCP 服务
-make init-mcp SERVICE=mcp-foo
+MindForge 提供即用型模板来创建新的 agents 和 skills。模板支持中英文两种语言。
 
-# 创建新的 Agent
+#### 创建新的 Agent
+
+```bash
+# 创建英文 agent（默认）
 make init-agent AGENT=my-agent
 
-# 创建新的 Skill
+# 创建中文 agent
+make init-agent AGENT=my-agent LANG=zh-cn
+
+# 创建英文 agent（显式指定）
+make init-agent AGENT=my-agent LANG=en
+```
+
+**你将得到:**
+- 包含完整 frontmatter 的 agent 文件（name, description, tools, model, skills）
+- 结构化的章节：角色定义、核心原则、最佳实践
+- 代码模板和质量检查清单
+- 可根据具体用途自定义
+
+**创建后的步骤:**
+1. 编辑 `agents/{lang}/{agent-name}.md` 自定义 agent
+2. 更新名称、描述和系统提示
+3. 在 frontmatter 中指定要使用的工具和技能
+4. 运行 `./setup-claude.sh --lang={lang}` 激活
+
+#### 创建新的 Skill
+
+```bash
+# 创建英文 skill（默认）
 make init-skill SKILL=my-skill
+
+# 创建中文 skill
+make init-skill SKILL=my-skill LANG=zh-cn
+
+# 创建英文 skill（显式指定）
+make init-skill SKILL=my-skill LANG=en
 ```
 
-### 为 Agent 添加 Skill
+**你将得到:**
+- 包含完整 frontmatter 的 skill 文件（name, description, allowed-tools）
+- 结构化的章节：专业知识、原则、最佳实践
+- 代码模式、模板和故障排查指南
+- 质量检查清单和决策框架
+- 可跨多个 agents 使用
 
-```sh
-# 将 skill 添加到 agent
-make add-skill AGENT=my-agent SKILL=my-skill
+**创建后的步骤:**
+1. 编辑 `skills/{lang}/{skill-name}/SKILL.md` 定义能力
+2. 添加领域专属知识和最佳实践
+3. 包含代码模板和常见模式
+4. 运行 `./setup-claude.sh --lang={lang}` 激活
+
+#### 创建新的 MCP 服务
+
+```bash
+# 创建新的 MCP 服务
+make init-mcp SERVICE=mcp-foo
 ```
+
+**创建后的步骤:**
+1. 进入 `mcp/mcp-foo/` 目录
+2. 实现你的 MCP 服务
+3. 添加包含 `build`、`test` 和 `clean` 目标的 Makefile
+
+### 管理 Agent 中的 Skills
+
+```bash
+# 为英文 agent 添加 skill
+make add-skill AGENT=my-agent SKILL=testing
+
+# 为中文 agent 添加 skill
+make add-skill AGENT=my-agent SKILL=testing LANG=zh-cn
+```
+
+这会自动更新 agent 的 frontmatter 以包含指定的 skill。
 
 ### 构建和测试
 
-```sh
+```bash
 # 构建单个 MCP 服务
 make build SERVICE=mcp-foo
 
-# 构建单个 Agent
-make build AGENT=my-agent
-
-# 构建单个 Skill
-make build SKILL=my-skill
-
-# 构建所有资源
+# 构建所有 MCP 服务
 make build-all
 
-# 测试所有资源
+# 测试所有 MCP 服务
 make test-all
 
-# 清理所有资源
+# 清理所有 MCP 服务构建产物
 make clean-all
 ```
+
+**注意:** Agents 和 skills 是 markdown 文件，无需构建。
 
 ## 📋 资源约定
 
