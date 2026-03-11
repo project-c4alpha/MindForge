@@ -48,41 +48,32 @@ API Key 需要通过以下方式之一提供：
 
 3. **直接传入**: 在调用时直接传入 token 参数
 
-## 代码使用
+## 使用方法
 
-使用 `scripts/alltick_client.py` 中的 `AlltickClient` 类来调用 API：
+使用 `scripts/fetch_all_ticks.py` 获取股票行情数据：
 
-```python
-from scripts.alltick_client import AlltickClient
+```bash
+# 获取指定股票的分时、五日、日K数据
+python3 scripts/fetch_all_ticks.py --code 700.HK
 
-# 初始化客户端（会自动从配置文件读取 API Key）
-client = AlltickClient()
+# 保存到指定目录
+python3 scripts/fetch_all_ticks.py --code 700.HK --output-dir ~/stock_data
 
-# 或直接传入 token
-client = AlltickClient(token="your-token-here")
+# 自定义 K 线类型和间隔
+python3 scripts/fetch_all_ticks.py --code AAPL.US --types 1min,daily --interval 15
 
-# 查询股票K线
-kline_data = client.get_kline(
-    code="700.HK",           # 股票代码
-    kline_type=1,            # 1=1分钟K线
-    query_kline_num=10       # 查询10根K线
-)
-
-# 批量查询最新成交价
-tick_data = client.get_trade_tick(
-    codes=["700.HK", "AAPL.US"]
-)
-
-# 查询盘口深度
-depth_data = client.get_depth_tick(
-    codes=["700.HK"]
-)
-
-# 获取股票基础信息
-info = client.get_static_info(
-    codes=["700.HK", "AAPL.US"]
-)
+# 输出到单个 JSON 文件
+python3 scripts/fetch_all_ticks.py --code 700.HK --dump-file result.json
 ```
+
+**参数说明**：
+- `--code, -c`：股票代码（必需）
+- `--types, -t`：K线类型，默认 `1min,5day,daily`
+- `--interval, -i`：调用间隔秒数，默认 10
+- `--output-dir, -o`：保存独立 JSON 文件的目录
+- `--dump-file`：将所有数据保存到单个 JSON 文件
+
+**可用 K 线类型**: `1min`, `5min`, `5day`, `15min`, `30min`, `hour`, `daily`, `week`, `month`
 
 ## K线类型说明
 
@@ -117,26 +108,6 @@ info = client.get_static_info(
 | 专业 | 每1秒20次 | 1,728,000 次 |
 
 **注意**: `/batch-kline` 接口有额外的时间间隔要求，请参考接口文档。
-
-## 批量获取脚本
-
-使用 `scripts/fetch_all_ticks.py` 可以按顺序获取多种 K 线数据，自动控制调用间隔：
-
-```bash
-# 获取所有类型（1分钟、5分钟、日K），默认间隔 10 秒
-python3 scripts/fetch_all_ticks.py --code 700.HK
-
-# 保存到指定目录
-python3 scripts/fetch_all_ticks.py --code 700.HK --output-dir ~/stock_data
-
-# 自定义类型和间隔
-python3 scripts/fetch_all_ticks.py --code 700.HK --types 1min,daily --interval 15
-
-# 输出到单个文件
-python3 scripts/fetch_all_ticks.py --code 700.HK --dump-file result.json
-```
-
-**可用类型**: `1min`, `5min`, `15min`, `30min`, `hour`, `daily`, `week`, `month`
 
 ## 详细 API 参考
 

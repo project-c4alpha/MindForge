@@ -48,41 +48,32 @@ API Key can be provided through one of the following methods:
 
 3. **Direct parameter**: Pass token parameter directly when calling
 
-## Code Usage
+## Usage
 
-Use the `AlltickClient` class from `scripts/alltick_client.py` to call the API:
+Use `scripts/fetch_all_ticks.py` to fetch stock market data:
 
-```python
-from scripts.alltick_client import AlltickClient
+```bash
+# Fetch intraday, 5-day, and daily K-line data
+python3 scripts/fetch_all_ticks.py --code 700.HK
 
-# Initialize client (automatically reads API Key from config)
-client = AlltickClient()
+# Save to a directory
+python3 scripts/fetch_all_ticks.py --code 700.HK --output-dir ~/stock_data
 
-# Or pass token directly
-client = AlltickClient(token="your-token-here")
+# Custom K-line types and interval
+python3 scripts/fetch_all_ticks.py --code AAPL.US --types 1min,daily --interval 15
 
-# Query stock K-line
-kline_data = client.get_kline(
-    code="700.HK",           # Stock code
-    kline_type=1,            # 1=1-minute K-line
-    query_kline_num=10       # Query 10 K-lines
-)
-
-# Batch query latest trade prices
-tick_data = client.get_trade_tick(
-    codes=["700.HK", "AAPL.US"]
-)
-
-# Query order book depth
-depth_data = client.get_depth_tick(
-    codes=["700.HK"]
-)
-
-# Get stock basic information
-info = client.get_static_info(
-    codes=["700.HK", "AAPL.US"]
-)
+# Output to a single JSON file
+python3 scripts/fetch_all_ticks.py --code 700.HK --dump-file result.json
 ```
+
+**Parameters**:
+- `--code, -c`: Stock code (required)
+- `--types, -t`: K-line types, default `1min,5day,daily`
+- `--interval, -i`: API call interval in seconds, default 10
+- `--output-dir, -o`: Directory to save individual JSON files
+- `--dump-file`: Save all data to a single JSON file
+
+**Available K-line Types**: `1min`, `5min`, `5day`, `15min`, `30min`, `hour`, `daily`, `week`, `month`
 
 ## K-line Types
 
@@ -117,26 +108,6 @@ Rate limits vary by subscription plan:
 | Professional | 20 per second | 1,728,000 requests |
 
 **Note**: The `/batch-kline` endpoint has additional time interval requirements, please refer to the API documentation.
-
-## Batch Fetch Script
-
-Use `scripts/fetch_all_ticks.py` to fetch multiple K-line types in sequence with automatic rate limiting:
-
-```bash
-# Fetch all types (1min, 5min, daily) with 10s interval
-python3 scripts/fetch_all_ticks.py --code 700.HK
-
-# Save to directory
-python3 scripts/fetch_all_ticks.py --code 700.HK --output-dir ~/stock_data
-
-# Custom types and interval
-python3 scripts/fetch_all_ticks.py --code 700.HK --types 1min,daily --interval 15
-
-# Output to single file
-python3 scripts/fetch_all_ticks.py --code 700.HK --dump-file result.json
-```
-
-**Available Types**: `1min`, `5min`, `15min`, `30min`, `hour`, `daily`, `week`, `month`
 
 ## Detailed API Reference
 
