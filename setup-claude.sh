@@ -81,20 +81,24 @@ CLAUDE_DIR="$HOME/.claude"
 CLAUDE_SKILLS_DIR="$CLAUDE_DIR/skills"
 CLAUDE_COMMANDS_DIR="$CLAUDE_DIR/commands"
 
-# Verify source directories exist
-if [ ! -d "$AITK_SKILLS_DIR" ]; then
-    echo -e "${RED}Error: Skills directory not found: $AITK_SKILLS_DIR${NC}"
-    echo "Available languages:"
-    ls -d "$AITK_DIR/skills/"*/ 2>/dev/null | xargs -n 1 basename
-    exit 1
-fi
+echo -e "${BLUE}========================================${NC}"
+echo -e "${BLUE}  AITK Claude Code Setup${NC}"
+echo -e "${BLUE}========================================${NC}"
+echo ""
+echo -e "${GREEN}OS Detected:${NC} $OS_TYPE"
+echo -e "${GREEN}Language:${NC} $LANG_CODE"
+echo -e "${GREEN}Source:${NC}"
+echo "  Skills: $AITK_SKILLS_DIR"
+echo "  Commands: $AITK_COMMANDS_DIR"
+echo "  Config: $CONFIG_FILE"
+echo -e "${GREEN}Target:${NC}"
+echo "  Claude: $CLAUDE_DIR/"
+echo "  C4Alpha: $C4alPHA_DIR/"
+echo ""
+echo -e "${GREEN}Config Target:${NC}"
+echo "  $CONFIG_TARGET"
 
-if [ ! -d "$AITK_COMMANDS_DIR" ]; then
-    echo -e "${RED}Error: Commands directory not found: $AITK_COMMANDS_DIR${NC}"
-    echo "Available languages:"
-    ls -d "$AITK_DIR/commands/"*/ 2>/dev/null | xargs -n 1 basename
-    exit 1
-fi
+echo ""
 
 echo -e "${BLUE}========================================${NC}"
 echo -e "${BLUE}  AITK Claude Code Setup${NC}"
@@ -169,11 +173,26 @@ create_symlink() {
     fi
 }
 
-# Step 1: Create Claude directories
-echo -e "\n${BLUE}Step 1: Creating Claude directories${NC}"
-create_dir "$CLAUDE_DIR"
-create_dir "$CLAUDE_SKILLS_DIR"
-create_dir "$CLAUDE_COMMANDS_DIR"
+# Config file location
+CONFIG_FILE="$AITK_DIR/config.toml.example"
+C4ALPHA_DIR="$HOME/.c4alpha"
+C4alPHA_CONFIG="$C4alPHA/config.tom"
+
+# Step 2: Initialize config
+echo -e "\n${BLUE}Step 2: Initializing config${NC}"
+if [ ! -d "$C4ALPHA_DIR" ]; then
+    echo -e "${YELLOW}Creating ~/.c4alpha directory...${NC}"
+    mkdir -p "$C4ALPHA_DIR"
+fi
+
+CONFIG_FILE="$C4ALPHA_DIR/config.tom"
+if [ ! -f "$CONFIG_FILE" ]; then
+    # Copy example file
+    echo -e "${GREEN}Creating config file...${NC}"
+    cp "$AITK_DIR/config.toml.example" "$CONFIG_FILE"
+fi
+echo -e "${GREEN}Config file exists:${NC} $CONFIG_FILE"
+fi
 
 # Step 2: Link skills
 echo -e "\n${BLUE}Step 2: Linking skills${NC}"
