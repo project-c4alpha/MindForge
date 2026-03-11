@@ -118,6 +118,26 @@ Rate limits vary by subscription plan:
 
 **Note**: The `/batch-kline` endpoint has additional time interval requirements, please refer to the API documentation.
 
+## Batch Fetch Script
+
+Use `scripts/fetch_all_ticks.py` to fetch multiple K-line types in sequence with automatic rate limiting:
+
+```bash
+# Fetch all types (1min, 5min, daily) with 10s interval
+python3 scripts/fetch_all_ticks.py --code 700.HK
+
+# Save to directory
+python3 scripts/fetch_all_ticks.py --code 700.HK --output-dir ~/stock_data
+
+# Custom types and interval
+python3 scripts/fetch_all_ticks.py --code 700.HK --types 1min,daily --interval 15
+
+# Output to single file
+python3 scripts/fetch_all_ticks.py --code 700.HK --dump-file result.json
+```
+
+**Available Types**: `1min`, `5min`, `15min`, `30min`, `hour`, `daily`, `week`, `month`
+
 ## Detailed API Reference
 
 For complete API documentation, please refer to:

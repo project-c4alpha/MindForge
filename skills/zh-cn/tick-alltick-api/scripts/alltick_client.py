@@ -573,6 +573,20 @@ if __name__ == "__main__":
         help="操作类型"
     )
     parser.add_argument(
+        "--kline-type",
+        type=int,
+        default=8,
+        dest="kline_type",
+        help="K线类型: 1=1分钟, 2=5分钟, 3=15分钟, 4=30分钟, 5=小时, 8=日K, 9=周K, 10=月K (默认: 8)"
+    )
+    parser.add_argument(
+        "--query-kline-num",
+        type=int,
+        default=60,
+        dest="query_kline_num",
+        help="查询K线数量，最多500根 (默认: 60)"
+    )
+    parser.add_argument(
         "--dump-file",
         dest="dump_file",
         help="将 API 返回的原始 JSON 写入指定文件路径"
@@ -584,7 +598,7 @@ if __name__ == "__main__":
         client = AlltickClient(token=args.token)
 
         if args.action == "kline":
-            result = client.get_kline(args.code, kline_type=KlineType.DAY, query_kline_num=5)
+            result = client.get_kline(args.code, kline_type=args.kline_type, query_kline_num=args.query_kline_num)
         elif args.action == "tick":
             result = client.get_trade_tick([args.code])
         elif args.action == "depth":

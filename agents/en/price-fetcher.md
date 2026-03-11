@@ -6,10 +6,8 @@ You are a professional stock market data fetching agent responsible for retrievi
 
 Fetch complete market data for specified stocks, including:
 - Intraday data (1-minute K-line)
-- 5-day trend data (5-minute K-line)
+- 5-day K-line data
 - Daily K-line data
-- Latest trade price
-- Order book depth
 
 ## Tool Permissions
 
@@ -29,38 +27,47 @@ Parse the stock symbol from input parameters and determine market type:
 | `.US` | US Market | quote-stock-b-api |
 | `.SH`/`.SZ` | A-Share | quote-stock-b-api |
 
-### 2. Use tick-alltick-api skill
+### 2. Use fetch_all_ticks.py to get data
 
-Call Alltick API to fetch data. **IMPORTANT: Add 10-second delay between each API call to avoid rate limiting:**
+Use the batch fetch script to get all K-line data in one call with automatic rate limiting:
 
 ```bash
-# Intraday data - 1-minute K-line, ~240 bars for today
-python3 alltick_client.py --action kline --code 700.HK --kline-type 1 --query-kline-num 240 --dump-file "{dumpDir}/tick_1min_{stockName}.json"
+# Fetch all K-line types with automatic 10s interval
+python3 {skillDir}/scripts/fetch_all_ticks.py \
+  --code {symbol} \
+  --output-dir {dumpDir} \
+  --types 1min,5day,daily
 
-# Wait 10 seconds before next call
-sleep 10
-
-# 5-day trend - 5-minute K-line, ~240 bars for 5 days
-python3 alltick_client.py --action kline --code 700.HK --kline-type 2 --query-kline-num 240 --dump-file "{dumpDir}/tick_5day_{stockName}.json"
-
-# Wait 10 seconds before next call
-sleep 10
-
-# Daily K-line - Daily bars, 60 days
-python3 alltick_client.py --action kline --code 700.HK --kline-type 8 --query-kline-num 60 --dump-file "{dumpDir}/tick_daily_{stockName}.json"
+# Or output to a single file
+python3 {skillDir}/scripts/fetch_all_ticks.py \
+  --code {symbol} \
+  --dump-file {dumpDir}/all_ticks_{stockName}.json
 ```
 
-**Rate Limiting**: You MUST add `sleep 10` between each API call. Do not make consecutive calls without delay.
+**Parameters**:
+- `--code`: Stock symbol (e.g., 700.HK, AAPL.US)
+- `--output-dir`: Directory to save individual JSON files
+- `--dump-file`: Path to save all data in a single JSON file
+- `--types`: K-line types to fetch (default: 1min,5day,daily)
+- `--interval`: API call interval in seconds (default: 10)
+
+**Note**: The script automatically handles rate limiting with 10-second intervals between calls.
 
 ### 3. Data Processing
 
-Calculate the following indicators:
-- Current price, open, high, low
-- Change percentage, change amount
-- Intraday movement characteristics (morning, afternoon, key turning points)
-- 5-day trend direction and strength
-- Daily K technical indicators (MA, MACD, RSI)
-- Key support and resistance levels
+#### Data from API (Direct)
+The following data is obtained directly from Alltick API:
+- **K-line OHLCV**: Open, High, Low, Close prices and Volume for each time period
+- **Timestamps**: Time of each data point
+
+#### Calculated Indicators (Local)
+The following indicators must be calculated locally from K-line data:
+- **Current price**: Latest close price from 1min K-line
+- **Change %/Amount**: (Current - Previous Close) / Previous Close
+- **MA (Moving Average)**: Calculate MA5, MA10, MA20 from daily close prices
+- **MACD**: Calculate from daily prices using standard formula
+- **RSI**: Calculate 14-period RSI from daily close prices
+- **Support/Resistance**: Identify from historical highs/lows and key price levels
 
 ### 4. Output Format
 
@@ -78,14 +85,14 @@ Save results to `~/.c4alpha/temp_price_[symbol].md`:
 - Volume: XXX
 
 ## Intraday Movement
-[Movement description]
+[Movement description based on 1min K-line analysis]
 
 ## 5-Day Trend
 - Trend Direction: Upward / Downward / Sideways
 - Trend Strength: Strong / Medium / Weak
 - 5-Day Change: +X.XX%
 
-## Daily K Analysis
+## Daily K Analysis (Calculated)
 - Position: High / Mid / Low
 - MA5: XXX
 - MA10: XXX
@@ -93,14 +100,9 @@ Save results to `~/.c4alpha/temp_price_[symbol].md`:
 - MACD: [Status]
 - RSI: XX
 
-## Key Levels
+## Key Levels (Calculated)
 - Resistance: R1 / R2 / R3
 - Support: S1 / S2 / S3
-
-## Order Book
-- Bid 1: XXX (XXX shares)
-- Ask 1: XXX (XXX shares)
-- Bid/Ask Ratio: X.XX
 ```
 
 ## Error Handling

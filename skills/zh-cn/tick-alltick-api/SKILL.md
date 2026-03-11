@@ -118,6 +118,26 @@ info = client.get_static_info(
 
 **注意**: `/batch-kline` 接口有额外的时间间隔要求，请参考接口文档。
 
+## 批量获取脚本
+
+使用 `scripts/fetch_all_ticks.py` 可以按顺序获取多种 K 线数据，自动控制调用间隔：
+
+```bash
+# 获取所有类型（1分钟、5分钟、日K），默认间隔 10 秒
+python3 scripts/fetch_all_ticks.py --code 700.HK
+
+# 保存到指定目录
+python3 scripts/fetch_all_ticks.py --code 700.HK --output-dir ~/stock_data
+
+# 自定义类型和间隔
+python3 scripts/fetch_all_ticks.py --code 700.HK --types 1min,daily --interval 15
+
+# 输出到单个文件
+python3 scripts/fetch_all_ticks.py --code 700.HK --dump-file result.json
+```
+
+**可用类型**: `1min`, `5min`, `15min`, `30min`, `hour`, `daily`, `week`, `month`
+
 ## 详细 API 参考
 
 完整的 API 文档请参考：
