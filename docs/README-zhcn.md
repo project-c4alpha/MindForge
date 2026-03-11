@@ -32,6 +32,25 @@ MindForge 与 Claude Code 无缝集成。运行设置脚本自动配置所有 ag
 
 这将创建符号链接到 `~/.claude/` 目录，使 Claude Code 自动加载所有 agents 和 skills。
 
+### 🎛️ 用户级别配置
+
+为了在所有项目中获得个性化的行为，你可以配置用户级别指令：
+
+```bash
+# 复制用户级别指令到 Claude 目录
+cp user_claude_md/en/CLAUDE.md ~/.claude/CLAUDE.md    # 英文
+cp user_claude_md/zh-cn/CLAUDE.md ~/.claude/CLAUDE.md  # 中文
+```
+
+**用户级别配置提供：**
+- **全局原则**：应用于所有对话的默认行为
+- **语言偏好**：设置你偏好的响应语言（中文或英文）
+- **搜索优先**：处理不确定问题时的指导
+- **安全规则**：破坏性操作的确认要求
+- **内置能力优先**：关于何时使用 agents/skills 与外部工具的指导
+
+**注意：** 用户级别配置是可选的。如果未配置，Claude Code 将使用其默认行为。
+
 ### 🌍 支持的语言
 
 - **en** - English（英文）
@@ -39,24 +58,36 @@ MindForge 与 Claude Code 无缝集成。运行设置脚本自动配置所有 ag
 
 ## 🤖 可用的 Agents
 
+- **@code-reviewer** - 专家代码审查员（软件架构、设计模式、代码质量、SOLID 原则）
+- **@frontend-engineer** - 现代前端开发专家（React, Vue, Svelte, TypeScript）
+- **@golang-backend-engineer** - Go 后端开发专家（Fiber, Cobra, GORM, Clean Architecture）
+- **@ios-developer** - 专业的 iOS 开发者（Swift 6, SwiftUI, MVVM, TCA）
+- **@java-backend-engineer** - 专业 Java 后端工程师（Spring Boot, MyBatis, Clean Architecture）
 - **@java-unit-test** - 专业的 Java 单元测试生成器（JUnit, Mockito, AssertJ）
+- **@product-manager** - 资深产品经理（PRD 撰写、用户故事、竞品分析）
 - **@python-test-engineer** - 专业的 Python 测试工程师（pytest, unittest, pytest-asyncio）
 - **@system-architect** - 系统架构设计专家（架构模式、技术选型、ADR 文档）
-- **@golang-backend-engineer** - Go 后端开发专家（Fiber, Cobra, GORM, Clean Architecture）
-- **@frontend-engineer** - 前端开发专家（Svelte, SvelteKit, shadcn-svelte, Bun）
 
 ## 🎯 可用的 Skills
 
-- **testing** - 通用测试技能（单元、集成、TDD/BDD）
-- **enterprise-java** - 企业级 Java 开发（Spring Boot, 微服务）
-- **go-development** - Go 开发（Fiber, Cobra, GORM）
-- **python-development** - Python 开发（FastAPI, Django, Flask, asyncio）
-- **javascript-typescript** - JavaScript/TypeScript 开发（Node.js, Express, React）
-- **system-architecture** - 系统架构设计
 - **api-design** - API 设计（REST, GraphQL, gRPC）
 - **database-design** - 数据库设计与优化
+- **enterprise-java** - 企业级 Java 开发（Spring Boot, 微服务）
+- **frontend-react** - React 生态系统（Next.js, Server Components, Tailwind）
+- **frontend-svelte** - Svelte 生态系统（SvelteKit, shadcn-svelte）
+- **frontend-vue** - Vue 生态系统（Nuxt, Composition API, Pinia）
+- **git-guru** - 高级 Git 操作和版本控制精通
+- **go-development** - Go 开发（Fiber, Cobra, GORM）
+- **javascript-typescript** - JavaScript/TypeScript 开发（Node.js, Express, React）
+- **product-management** - 产品管理与策略
+- **python-development** - Python 开发（FastAPI, Django, Flask, asyncio）
+- **session-summary** - 总结当前会话上下文以便无缝交接
+- **swift-development** - Swift 6+ 核心开发能力（并发编程、宏、测试）
+- **swiftui-development** - 现代 SwiftUI 开发（NavigationStack, Observation, SwiftData）
+- **system-architecture** - 系统架构设计
 - **tech-documentation** - 技术文档编写
-- **frontend-development** - 前端开发（Svelte, SvelteKit, shadcn-svelte, Tailwind CSS）
+- **testing** - 通用测试技能（单元、集成、TDD/BDD）
+- **xcode-management** - Xcode 项目管理（自动添加文件、project.pbxproj 处理）
 
 ## 📁 项目结构
 
@@ -64,17 +95,24 @@ MindForge 与 Claude Code 无缝集成。运行设置脚本自动配置所有 ag
 mindforge/
 ├── agents/              # Claude Code 格式的 Agents（多语言支持）
 │   ├── en/             # 英文版本
-│   │   ├── java-unit-test.md
-│   │   ├── python-test-engineer.md
-│   │   ├── system-architect.md
+│   │   ├── code-reviewer.md
+│   │   ├── frontend-engineer.md
 │   │   ├── golang-backend-engineer.md
-│   │   └── frontend-engineer.md
+│   │   ├── ios-developer.md
+│   │   ├── java-backend-engineer.md
+│   │   ├── java-unit-test.md
+│   │   ├── product-manager.md
+│   │   ├── python-test-engineer.md
+│   │   └── system-architect.md
 │   └── zh-cn/          # 中文版本
-│       ├── java-unit-test.md
-│       ├── python-test-engineer.md
-│       ├── system-architect.md
+│       ├── code-reviewer.md
+│       ├── frontend-engineer.md
 │       ├── golang-backend-engineer.md
-│       └── frontend-engineer.md
+│       ├── java-backend-engineer.md
+│       ├── java-unit-test.md
+│       ├── product-manager.md
+│       ├── python-test-engineer.md
+│       └── system-architect.md
 ├── skills/              # Claude Code 格式的 Skills（多语言支持）
 │   ├── en/             # 英文版本
 │   │   ├── testing/SKILL.md
@@ -86,18 +124,30 @@ mindforge/
 │   │   ├── api-design/SKILL.md
 │   │   ├── database-design/SKILL.md
 │   │   ├── tech-documentation/SKILL.md
-│   │   └── frontend-development/SKILL.md
-│   └── zh-cn/          # 中文版本
-│       ├── testing/SKILL.md
-│       ├── enterprise-java/SKILL.md
-│       ├── go-development/SKILL.md
-│       ├── python-development/SKILL.md
-│       ├── javascript-typescript/SKILL.md
-│       ├── system-architecture/SKILL.md
-│       ├── api-design/SKILL.md
-│       ├── database-design/SKILL.md
-│       ├── tech-documentation/SKILL.md
-│       └── frontend-development/SKILL.md
+│   │   ├── frontend-development/SKILL.md
+│   │   ├── git-guru/SKILL.md
+│   │   └── xcode-management/SKILL.md
+│   ├── zh-cn/          # 中文版本
+│   │   ├── testing/SKILL.md
+│   │   ├── enterprise-java/SKILL.md
+│   │   ├── go-development/SKILL.md
+│   │   ├── python-development/SKILL.md
+│   │   ├── javascript-typescript/SKILL.md
+│   │   ├── system-architecture/SKILL.md
+│   │   ├── api-design/SKILL.md
+│   │   ├── database-design/SKILL.md
+│   │   ├── tech-documentation/SKILL.md
+│   │   ├── frontend-development/SKILL.md
+│   │   ├── git-guru/SKILL.md
+│   │   └── xcode-management/SKILL.md
+│   └── scripts/        # 技能共享的可执行脚本
+│       └── xcode-management/
+│           └── add_files_to_xcode.py  # 自动化 Xcode 文件添加
+├── user_claude_md/      # 用户级别 Claude 指令（多语言支持）
+│   ├── en/
+│   │   └── CLAUDE.md   # 英文用户级别指令
+│   └── zh-cn/
+│       └── CLAUDE.md   # 中文用户级别指令
 ├── templates/           # 创建新资源的模板
 │   ├── agent-template-en.md      # 英文 agent 模板
 │   ├── agent-template-zhcn.md    # 中文 agent 模板
@@ -106,10 +156,25 @@ mindforge/
 ├── mcp/                 # MCP 服务集合
 │   ├── _template/
 │   └── mcp-*/
+├── docs/                # 文档
+│   ├── README-zhcn.md   # 中文 README
+│   └── agents-detail/   # 详细 agent 文档
+│       ├── en/          # 英文详细指南
+│       │   ├── java-backend-engineer/README.md
+│       │   ├── java-unit-test/README.md
+│       │   ├── python-test-engineer/README.md
+│       │   ├── system-architect/README.md
+│       │   ├── golang-backend-engineer/README.md
+│       │   └── frontend-engineer/README.md
+│       └── zh-cn/       # 中文详细指南
+│           ├── java-backend-engineer/README.md
+│           ├── java-unit-test/README.md
+│           ├── python-test-engineer/README.md
+│           ├── system-architect/README.md
+│           ├── golang-backend-engineer/README.md
+│           └── frontend-engineer/README.md
 ├── Makefile             # 构建和资源管理
-├── setup-claude.sh      # Claude Code 设置脚本（支持 --lang 参数）
-└── docs/                # 文档
-    └── README-zhcn.md   # 中文 README
+└── setup-claude.sh      # Claude Code 设置脚本（支持 --lang 参数）
 ```
 
 ## 🛠️ 使用方法
@@ -166,14 +231,17 @@ make init-agent AGENT=my-agent LANG=en
 #### 创建新的 Skill
 
 ```bash
-# 创建英文 skill（默认）
+# 创建英文 skill（默认，不带脚本）
 make init-skill SKILL=my-skill
+
+# 创建带有可执行脚本的 skill
+make init-skill SKILL=my-skill WITH_SCRIPTS=yes
 
 # 创建中文 skill
 make init-skill SKILL=my-skill LANG=zh-cn
 
-# 创建英文 skill（显式指定）
-make init-skill SKILL=my-skill LANG=en
+# 创建带脚本的中文 skill
+make init-skill SKILL=my-skill LANG=zh-cn WITH_SCRIPTS=yes
 ```
 
 **你将得到:**
@@ -181,13 +249,21 @@ make init-skill SKILL=my-skill LANG=en
 - 结构化的章节：专业知识、原则、最佳实践
 - 代码模式、模板和故障排查指南
 - 质量检查清单和决策框架
+- （可选）共享的 `skills/scripts/{skill-name}/` 目录用于可执行脚本
 - 可跨多个 agents 使用
 
 **创建后的步骤:**
 1. 编辑 `skills/{lang}/{skill-name}/SKILL.md` 定义能力
 2. 添加领域专属知识和最佳实践
 3. 包含代码模板和常见模式
-4. 运行 `./setup-claude.sh --lang={lang}` 激活
+4. （可选）添加可执行脚本到 `skills/scripts/{skill-name}/`
+5. 运行 `./setup-claude.sh --lang={lang}` 激活
+
+**脚本支持：**
+当使用 `WITH_SCRIPTS=yes` 时，会在 `skills/scripts/{skill-name}/` 创建一个共享脚本目录。这样可以：
+- 多语言版本的 skill 共享相同的可执行脚本
+- 在 skill 文档中通过相对路径 `scripts/` 引用脚本
+- 在设置过程中自动链接/复制脚本，Unix/Mac 使用符号链接，Windows 使用复制
 
 #### 创建新的 MCP 服务
 
