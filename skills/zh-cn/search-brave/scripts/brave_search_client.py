@@ -19,6 +19,10 @@ Brave Search API 客户端
     context = client.llm_context("what is machine learning")
 """
 
+# 抑制 macOS LibreSSL 兼容性警告
+import warnings
+warnings.filterwarnings("ignore", message="urllib3 v2 only supports OpenSSL")
+
 import os
 import json
 from typing import Optional, Dict, Any, List

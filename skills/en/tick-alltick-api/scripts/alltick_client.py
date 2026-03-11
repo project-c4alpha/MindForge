@@ -22,6 +22,10 @@ Alltick 金融数据 API 客户端
     info = client.get_static_info(["700.HK"])
 """
 
+# 抑制 macOS LibreSSL 兼容性警告
+import warnings
+warnings.filterwarnings("ignore", message="urllib3 v2 only supports OpenSSL")
+
 import os
 import json
 import uuid
