@@ -1,4 +1,4 @@
-# 获取 tickProvider Token
+# 获取 Tick Provider Token
 
 从 `~/.c4alpha/config.toml` 配置文件中读取 tickProvider 的 token。
 
