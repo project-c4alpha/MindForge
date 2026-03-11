@@ -69,10 +69,12 @@ AITK_DIR="$SCRIPT_DIR"
 # Source directories (with language)
 AITK_SKILLS_DIR="$AITK_DIR/skills/$LANG_CODE"
 AITK_COMMANDS_DIR="$AITK_DIR/commands/$LANG_CODE"
+AITK_AGENTS_DIR="$AITK_DIR/agents/$LANG_CODE"
 # Target directories
 CLAUDE_DIR="$HOME/.claude"
 CLAUDE_SKILLS_DIR="$CLAUDE_DIR/skills"
 CLAUDE_COMMANDS_DIR="$CLAUDE_DIR/commands"
+CLAUDE_AGENTS_DIR="$CLAUDE_DIR/agents"
 # Config file location
 C4ALPHA_DIR="$HOME/.c4alpha"
 C4ALPHA_CONFIG="$C4ALPHA_DIR/config.toml"
@@ -85,6 +87,7 @@ echo -e "${GREEN}Language:${NC} $LANG_CODE"
 echo -e "${GREEN}Source:${NC}"
 echo "  Skills: $AITK_SKILLS_DIR"
 echo "  Commands: $AITK_COMMANDS_DIR"
+echo "  Agents: $AITK_AGENTS_DIR"
 echo "  Config: $AITK_DIR/config.toml.example"
 echo -e "${GREEN}Target:${NC}"
 echo "  Claude: $CLAUDE_DIR/"
@@ -151,7 +154,9 @@ echo -e "\n${BLUE}Step 1: Creating directories${NC}"
 create_dir "$CLAUDE_DIR"
 create_dir "$CLAUDE_SKILLS_DIR"
 create_dir "$CLAUDE_COMMANDS_DIR"
+create_dir "$CLAUDE_AGENTS_DIR"
 create_dir "$C4ALPHA_DIR"
+create_dir "$C4ALPHA_DIR/report"
 # Step 2: Initialize config
 echo -e "\n${BLUE}Step 2: Initializing config${NC}"
 if [ ! -f "$C4ALPHA_CONFIG" ]; then
@@ -210,7 +215,21 @@ else
         create_symlink "$command_file" "$target_file" "$command_name"
     done
 fi
-# Step 5: Verification
+# Step 5: Link agents
+echo -e "\n${BLUE}Step 5: Linking agents${NC}"
+shopt -s nullglob
+AGENT_FILES=("$AITK_AGENTS_DIR"/*.md)
+shopt -u nullglob
+if [ ${#AGENT_FILES[@]} -eq 0 ]; then
+    echo -e "${YELLOW}No agent files found in $AITK_AGENTS_DIR${NC}"
+else
+    for agent_file in "${AGENT_FILES[@]}"; do
+        agent_name=$(basename "$agent_file")
+        target_file="$CLAUDE_AGENTS_DIR/$agent_name"
+        create_symlink "$agent_file" "$target_file" "$agent_name"
+    done
+fi
+# Step 6: Verification
 echo -e "\n${BLUE}Step 5: Verification${NC}"
 echo -e "\n${YELLOW}Config:${NC}"
 if [ -f "$C4ALPHA_CONFIG" ]; then
@@ -240,7 +259,18 @@ if [ -d "$CLAUDE_COMMANDS_DIR" ]; then
 else
     echo -e "${RED}  No commands directory${NC}"
 fi
-# Step 6: Summary
+echo -e "\n${YELLOW}Agents in ~/.claude/agents/:${NC}"
+if [ -d "$CLAUDE_AGENTS_DIR" ]; then
+    agent_count=$(ls -lh "$CLAUDE_AGENTS_DIR" 2>/dev/null | grep -E "^l" | wc -l | tr -d ' ')
+    if [ "$agent_count" -eq 0 ]; then
+        echo -e "${YELLOW}  No agents linked${NC}"
+    else
+        ls -lh "$CLAUDE_AGENTS_DIR" | grep -E "^l" | awk '{print "  " $9 " -> " $11}'
+    fi
+else
+    echo -e "${RED}  No agents directory${NC}"
+fi
+# Step 7: Summary
 echo -e "\n${BLUE}========================================${NC}"
 echo -e "${GREEN}Setup complete!${NC}"
 echo -e "${BLUE}========================================${NC}"
@@ -249,6 +279,7 @@ echo -e "${GREEN}Configuration:${NC}"
 echo "  Language: $LANG_CODE"
 echo "  Skills linked: $(ls -lh "$CLAUDE_SKILLS_DIR" 2>/dev/null | grep -E "^d|^l" | wc -l | tr -d ' ')"
 echo "  Commands linked: $(ls -lh "$CLAUDE_COMMANDS_DIR" 2>/dev/null | grep -E "^l" | wc -l | tr -d ' ')"
+echo "  Agents linked: $(ls -lh "$CLAUDE_AGENTS_DIR" 2>/dev/null | grep -E "^l" | wc -l | tr -d ' ')"
 echo ""
 echo -e "${GREEN}Next steps:${NC}"
 echo "1. Edit ~/.c4alpha/config.toml to add your API keys"
@@ -258,10 +289,10 @@ echo ""
 echo -e "${YELLOW}Important notes:${NC}"
 if [ "$OS_TYPE" = "windows" ]; then
     echo "- ${RED}Windows: Files are copied, not linked. Re-run this script after making changes!${NC}"
-    echo "- To remove: ${RED}rm -rf ~/.claude/skills/* ~/.claude/commands/*${NC}"
+    echo "- To remove: ${RED}rm -rf ~/.claude/skills/* ~/.claude/commands/* ~/.claude/agents/*${NC}"
 else
-    echo "- Changes to skills/commands in your project are immediately available"
-    echo "- To remove links: ${RED}rm ~/.claude/skills/* ~/.claude/commands/*${NC}"
+    echo "- Changes to skills/commands/agents in your project are immediately available"
+    echo "- To remove links: ${RED}rm ~/.claude/skills/* ~/.claude/commands/* ~/.claude/agents/*${NC}"
 fi
 echo "- To switch language, run: ${BLUE}$0 --lang=<lang>${NC}"
 echo ""

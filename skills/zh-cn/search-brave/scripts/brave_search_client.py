@@ -367,6 +367,11 @@ if __name__ == "__main__":
         default="web",
         help="搜索类型"
     )
+    parser.add_argument(
+        "--dump-file",
+        dest="dump_file",
+        help="将 API 原始 JSON 响应写入指定文件路径"
+    )
 
     args = parser.parse_args()
 
@@ -384,6 +389,18 @@ if __name__ == "__main__":
         elif args.type == "llm":
             result = client.llm_context(args.query)
 
+        # 如果指定了 dump-file，将原始 JSON 写入文件
+        if args.dump_file:
+            dump_path = os.path.expanduser(args.dump_file)
+            # 确保目录存在
+            dump_dir = os.path.dirname(dump_path)
+            if dump_dir and not os.path.exists(dump_dir):
+                os.makedirs(dump_dir, exist_ok=True)
+            with open(dump_path, "w", encoding="utf-8") as f:
+                json.dump(result, f, ensure_ascii=False, indent=2)
+            print(f"JSON response saved to: {dump_path}")
+
+        # 打印简要结果到 stdout
         print(json.dumps(result, indent=2, ensure_ascii=False))
     except Exception as e:
         print(f"Error: {e}")

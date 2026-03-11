@@ -33,3 +33,24 @@ api-key = "your-alltick-api-key-here"
 # [[tick.providers]]
 # name = "alpha-vantage"
 # api-key = "your-alpha-vantage-api-key-here"
+
+# =============================================================================
+# Storage Configuration
+# =============================================================================
+# Configure how analysis reports and data are stored
+
+[storage]
+# Storage mode: "local" (local file storage), "none" (no persistence)
+# - local: Save reports to local filesystem
+# - none: Disable persistent storage (reports are not saved)
+mode = "local"
+
+# Local storage path (only effective when mode = "local")
+# Supports environment variables and ~ for home directory
+# Default: ~/.c4alpha/report
+path = "~/.c4alpha/report"
+
+# Future storage modes (not yet implemented):
+# [storage.database]
+# type = "sqlite"  # or "postgres", "mysql"
+# connection_string = ""
