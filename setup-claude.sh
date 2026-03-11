@@ -12,7 +12,6 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
-
 # Detect OS
 detect_os() {
     if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "win32" ]] || [[ "$OSTYPE" == "cygwin" ]]; then
@@ -25,10 +24,8 @@ detect_os() {
 }
 
 OS_TYPE=$(detect_os)
-
 # Default language
 LANG_CODE="en"
-
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -60,27 +57,25 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
-
 # Validate language code
 if [[ "$LANG_CODE" != "en" && "$LANG_CODE" != "zh-cn" ]]; then
     echo -e "${RED}Error: Unsupported language '$LANG_CODE'${NC}"
     echo "Supported languages: en, zh-cn"
     exit 1
 fi
-
 # Get the absolute path of this script's directory
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 AITK_DIR="$SCRIPT_DIR"
-
 # Source directories (with language)
 AITK_SKILLS_DIR="$AITK_DIR/skills/$LANG_CODE"
 AITK_COMMANDS_DIR="$AITK_DIR/commands/$LANG_CODE"
-
 # Target directories
 CLAUDE_DIR="$HOME/.claude"
 CLAUDE_SKILLS_DIR="$CLAUDE_DIR/skills"
 CLAUDE_COMMANDS_DIR="$CLAUDE_DIR/commands"
-
+# Config file location
+C4ALPHA_DIR="$HOME/.c4alpha"
+C4ALPHA_CONFIG="$C4ALPHA_DIR/config.toml"
 echo -e "${BLUE}========================================${NC}"
 echo -e "${BLUE}  AITK Claude Code Setup${NC}"
 echo -e "${BLUE}========================================${NC}"
@@ -90,37 +85,18 @@ echo -e "${GREEN}Language:${NC} $LANG_CODE"
 echo -e "${GREEN}Source:${NC}"
 echo "  Skills: $AITK_SKILLS_DIR"
 echo "  Commands: $AITK_COMMANDS_DIR"
-echo "  Config: $CONFIG_FILE"
+echo "  Config: $AITK_DIR/config.toml.example"
 echo -e "${GREEN}Target:${NC}"
 echo "  Claude: $CLAUDE_DIR/"
-echo "  C4Alpha: $C4alPHA_DIR/"
+echo "  C4Alpha: $C4ALPHA_DIR/"
 echo ""
-echo -e "${GREEN}Config Target:${NC}"
-echo "  $CONFIG_TARGET"
-
-echo ""
-
-echo -e "${BLUE}========================================${NC}"
-echo -e "${BLUE}  AITK Claude Code Setup${NC}"
-echo -e "${BLUE}========================================${NC}"
-echo ""
-echo -e "${GREEN}OS Detected:${NC} $OS_TYPE"
-echo -e "${GREEN}Language:${NC} $LANG_CODE"
-echo -e "${GREEN}Source:${NC}"
-echo "  Skills: $AITK_SKILLS_DIR"
-echo "  Commands: $AITK_COMMANDS_DIR"
-echo -e "${GREEN}Target:${NC}"
-echo "  Claude: $CLAUDE_DIR/"
-echo ""
-
 # Windows-specific warnings
 if [ "$OS_TYPE" = "windows" ]; then
     echo -e "${YELLOW}⚠ Windows Detected${NC}"
     echo -e "${YELLOW}Note: On Windows, files will be copied instead of linked.${NC}"
     echo -e "${YELLOW}You'll need to re-run this script after making changes to skills/commands.${NC}"
-    echo -e ""
+    echo ""
 fi
-
 # Function to create directory if it doesn't exist
 create_dir() {
     local dir=$1
@@ -131,13 +107,11 @@ create_dir() {
         echo -e "${GREEN}Directory exists:${NC} $dir"
     fi
 }
-
 # Function to create or update symlink
 create_symlink() {
     local source=$1
     local target=$2
     local name=$3
-
     if [ "$OS_TYPE" = "windows" ]; then
         # Windows: always remove and re-copy to ensure latest version
         if [ -e "$target" ]; then
@@ -172,61 +146,47 @@ create_symlink() {
         fi
     fi
 }
-
-# Config file location
-CONFIG_FILE="$AITK_DIR/config.toml.example"
-C4ALPHA_DIR="$HOME/.c4alpha"
-C4alPHA_CONFIG="$C4alPHA/config.tom"
-
+# Step 1: Create directories
+echo -e "\n${BLUE}Step 1: Creating directories${NC}"
+create_dir "$CLAUDE_DIR"
+create_dir "$CLAUDE_SKILLS_DIR"
+create_dir "$CLAUDE_COMMANDS_DIR"
+create_dir "$C4ALPHA_DIR"
 # Step 2: Initialize config
 echo -e "\n${BLUE}Step 2: Initializing config${NC}"
-if [ ! -d "$C4ALPHA_DIR" ]; then
-    echo -e "${YELLOW}Creating ~/.c4alpha directory...${NC}"
-    mkdir -p "$C4ALPHA_DIR"
+if [ ! -f "$C4ALPHA_CONFIG" ]; then
+    echo -e "${GREEN}Creating config file from template...${NC}"
+    cp "$AITK_DIR/config.toml.example" "$C4ALPHA_CONFIG"
+    echo -e "${GREEN}  Created: $C4ALPHA_CONFIG${NC}"
+else
+    echo -e "${GREEN}Config file exists:${NC} $C4ALPHA_CONFIG"
 fi
-
-CONFIG_FILE="$C4ALPHA_DIR/config.tom"
-if [ ! -f "$CONFIG_FILE" ]; then
-    # Copy example file
-    echo -e "${GREEN}Creating config file...${NC}"
-    cp "$AITK_DIR/config.toml.example" "$CONFIG_FILE"
-fi
-echo -e "${GREEN}Config file exists:${NC} $CONFIG_FILE"
-fi
-
-# Step 2: Link skills
-echo -e "\n${BLUE}Step 2: Linking skills${NC}"
-
+# Step 3: Link skills
+echo -e "\n${BLUE}Step 3: Linking skills${NC}"
 shopt -s nullglob
 SKILL_DIRS=("$AITK_SKILLS_DIR"/*/)
 shopt -u nullglob
-
 if [ ${#SKILL_DIRS[@]} -eq 0 ]; then
     echo -e "${YELLOW}No skill directories found in $AITK_SKILLS_DIR${NC}"
 else
     for skill_dir in "${SKILL_DIRS[@]}"; do
         skill_name=$(basename "$skill_dir")
         target_dir="$CLAUDE_SKILLS_DIR/$skill_name"
-
         # If the target is a symlink (old behavior), remove it so we can create a directory
         if [ -L "$target_dir" ]; then
             echo -e "${YELLOW}⟳${NC} Converting $skill_name from symlink to directory structure"
             rm "$target_dir"
         fi
-
         # Create the skill directory in .claude
         create_dir "$target_dir"
-
         # Link content from the language-specific directory
         shopt -s nullglob
         skill_files=("$skill_dir"*)
         shopt -u nullglob
-
         for skill_file in "${skill_files[@]}"; do
             file_name=$(basename "$skill_file")
             create_symlink "$skill_file" "$target_dir/$file_name" "$skill_name/$file_name"
         done
-
         # Check if there are shared scripts for this skill
         shared_scripts_dir="$AITK_DIR/skills/scripts/$skill_name"
         if [ -d "$shared_scripts_dir" ]; then
@@ -236,14 +196,11 @@ else
         fi
     done
 fi
-
-# Step 3: Link commands
-echo -e "\n${BLUE}Step 3: Linking commands${NC}"
-
+# Step 4: Link commands
+echo -e "\n${BLUE}Step 4: Linking commands${NC}"
 shopt -s nullglob
 COMMAND_FILES=("$AITK_COMMANDS_DIR"/*.md)
 shopt -u nullglob
-
 if [ ${#COMMAND_FILES[@]} -eq 0 ]; then
     echo -e "${YELLOW}No command files found in $AITK_COMMANDS_DIR${NC}"
 else
@@ -253,22 +210,25 @@ else
         create_symlink "$command_file" "$target_file" "$command_name"
     done
 fi
-
-# Step 4: Verification
-echo -e "\n${BLUE}Step 4: Verification${NC}"
-
+# Step 5: Verification
+echo -e "\n${BLUE}Step 5: Verification${NC}"
+echo -e "\n${YELLOW}Config:${NC}"
+if [ -f "$C4ALPHA_CONFIG" ]; then
+    echo -e "${GREEN}  ✓ $C4ALPHA_CONFIG${NC}"
+else
+    echo -e "${RED}  ✗ $C4ALPHA_CONFIG not found${NC}"
+fi
 echo -e "\n${YELLOW}Skills in ~/.claude/skills/:${NC}"
 if [ -d "$CLAUDE_SKILLS_DIR" ]; then
-    skill_count=$(ls -lh "$CLAUDE_SKILLS_DIR" 2>/dev/null | grep -E "^l" | wc -l | tr -d ' ')
+    skill_count=$(ls -lh "$CLAUDE_SKILLS_DIR" 2>/dev/null | grep -E "^d|^l" | wc -l | tr -d ' ')
     if [ "$skill_count" -eq 0 ]; then
         echo -e "${YELLOW}  No skills linked${NC}"
     else
-        ls -lh "$CLAUDE_SKILLS_DIR" | grep -E "^l" | awk '{print "  " $9 " -> " $11}'
+        ls -lh "$CLAUDE_SKILLS_DIR" | grep -E "^d|^l" | awk '{print "  " $9 " -> " $11}'
     fi
 else
     echo -e "${RED}  No skills directory${NC}"
 fi
-
 echo -e "\n${YELLOW}Commands in ~/.claude/commands/:${NC}"
 if [ -d "$CLAUDE_COMMANDS_DIR" ]; then
     command_count=$(ls -lh "$CLAUDE_COMMANDS_DIR" 2>/dev/null | grep -E "^l" | wc -l | tr -d ' ')
@@ -280,20 +240,20 @@ if [ -d "$CLAUDE_COMMANDS_DIR" ]; then
 else
     echo -e "${RED}  No commands directory${NC}"
 fi
-
-# Step 5: Summary
+# Step 6: Summary
 echo -e "\n${BLUE}========================================${NC}"
 echo -e "${GREEN}Setup complete!${NC}"
 echo -e "${BLUE}========================================${NC}"
 echo ""
 echo -e "${GREEN}Configuration:${NC}"
 echo "  Language: $LANG_CODE"
-echo "  Skills linked: $(ls -lh "$CLAUDE_SKILLS_DIR" 2>/dev/null | grep -E "^l" | wc -l | tr -d ' ')"
+echo "  Skills linked: $(ls -lh "$CLAUDE_SKILLS_DIR" 2>/dev/null | grep -E "^d|^l" | wc -l | tr -d ' ')"
 echo "  Commands linked: $(ls -lh "$CLAUDE_COMMANDS_DIR" 2>/dev/null | grep -E "^l" | wc -l | tr -d ' ')"
 echo ""
 echo -e "${GREEN}Next steps:${NC}"
-echo "1. Claude Code will now automatically discover these skills"
-echo "2. Skills are automatically loaded when needed"
+echo "1. Edit ~/.c4alpha/config.toml to add your API keys"
+echo "2. Claude Code will automatically discover these skills"
+echo "3. Skills are automatically loaded when needed"
 echo ""
 echo -e "${YELLOW}Important notes:${NC}"
 if [ "$OS_TYPE" = "windows" ]; then
