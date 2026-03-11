@@ -1,11 +1,11 @@
 ---
-name: stock-tick-api
-description: Real-time market data API for stocks, forex, and cryptocurrency. Use this skill to fetch K-line/candlestick data, latest trade prices, order book depth, and stock fundamentals. Proactively use this skill when users need to query stock quotes, K-line chart data, real-time prices, order book data, forex rates, or cryptocurrency prices.
+name: tick-alltick-api
+description: Alltick-exclusive real-time market data API for stocks, forex, and cryptocurrency. Use this skill to fetch K-line/candlestick data, latest trade prices, order book depth, and stock fundamentals. Proactively use this skill when users need to query stock quotes, K-line chart data, real-time prices, order book data, forex rates, or cryptocurrency prices. This skill only supports Alltick API (https://alltick.co/).
 ---
 
-# Stock Market Data API Skill
+# Alltick Market Data API Skill
 
-This skill retrieves real-time financial market data, supporting stocks, forex, cryptocurrency, precious metals, and other financial instruments.
+This is an [Alltick](https://alltick.co/)-exclusive skill for retrieving real-time financial market data, supporting stocks, forex, cryptocurrency, precious metals, and other financial instruments.
 
 ## Supported Data Types
 
@@ -33,22 +33,29 @@ This skill retrieves real-time financial market data, supporting stocks, forex, 
 ### Forex/Crypto/Commodities API
 - Base URL: `https://quote.alltick.co/quote-b-api`
 
-## Token Configuration
+## API Key Configuration
 
-Token can be provided through one of the following methods:
+API Key can be provided through one of the following methods:
 
-1. **Config file**: Configure `tickProvider.token` in `~/.c4alpha/config.toml`
+1. **Config file**: Configure in `~/.c4alpha/config.toml` (Recommended)
+   ```toml
+   [[tick.providers]]
+   name = "alltick"
+   api-key = "your-alltick-api-key-here"
+   ```
+
 2. **Environment variable**: Set `ALLTICK_TOKEN` environment variable
+
 3. **Direct parameter**: Pass token parameter directly when calling
 
 ## Code Usage
 
-Use the `AlltickClient` class from `scripts/stock_tick_client.py` to call the API:
+Use the `AlltickClient` class from `scripts/alltick_client.py` to call the API:
 
 ```python
-from scripts.stock_tick_client import AlltickClient
+from scripts.alltick_client import AlltickClient
 
-# Initialize client (automatically reads token from config)
+# Initialize client (automatically reads API Key from config)
 client = AlltickClient()
 
 # Or pass token directly

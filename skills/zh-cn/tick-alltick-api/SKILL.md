@@ -1,11 +1,11 @@
 ---
-name: stock-tick-api
-description: 股票、外汇、加密货币实时行情数据获取技能。使用此技能获取K线数据、最新成交价、盘口深度、股票基础信息等。当用户需要查询股票行情、K线图数据、实时价格、盘口数据、外汇行情、加密货币价格时，请主动使用此技能。
+name: tick-alltick-api
+description: Alltick 专属的股票、外汇、加密货币实时行情数据获取技能。使用此技能获取K线数据、最新成交价、盘口深度、股票基础信息等。当用户需要查询股票行情、K线图数据、实时价格、盘口数据、外汇行情、加密货币价格时，请主动使用此技能。此技能仅支持 Alltick API (https://alltick.co/)。
 ---
 
-# 股票交易数据获取技能
+# Alltick 行情数据 API 技能
 
-这是一个用于获取实时金融行情数据的技能，支持股票、外汇、加密货币、贵金属等多种金融产品的数据查询。
+这是 [Alltick](https://alltick.co/) 专属的金融行情数据获取技能，支持股票、外汇、加密货币、贵金属等多种金融产品的实时数据查询。
 
 ## 支持的数据类型
 
@@ -33,22 +33,29 @@ description: 股票、外汇、加密货币实时行情数据获取技能。使�
 ### 外汇/加密货币/商品 API
 - 基础路径: `https://quote.alltick.co/quote-b-api`
 
-## Token 配置
+## API Key 配置
 
-Token 需要通过以下方式之一提供：
+API Key 需要通过以下方式之一提供：
 
-1. **配置文件**: 在 `~/.c4alpha/config.toml` 中配置 `tickProvider.token`
+1. **配置文件**: 在 `~/.c4alpha/config.toml` 中配置（推荐）
+   ```toml
+   [[tick.providers]]
+   name = "alltick"
+   api-key = "your-alltick-api-key-here"
+   ```
+
 2. **环境变量**: 设置 `ALLTICK_TOKEN` 环境变量
+
 3. **直接传入**: 在调用时直接传入 token 参数
 
 ## 代码使用
 
-使用 `scripts/stock_tick_client.py` 中的 `AlltickClient` 类来调用 API：
+使用 `scripts/alltick_client.py` 中的 `AlltickClient` 类来调用 API：
 
 ```python
-from scripts.stock_tick_client import AlltickClient
+from scripts.alltick_client import AlltickClient
 
-# 初始化客户端（会自动从配置文件读取 token）
+# 初始化客户端（会自动从配置文件读取 API Key）
 client = AlltickClient()
 
 # 或直接传入 token

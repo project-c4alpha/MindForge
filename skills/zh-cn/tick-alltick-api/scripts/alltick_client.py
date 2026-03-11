@@ -1,25 +1,24 @@
 #!/usr/bin/env python3
 """
-Alltick Financial Data API Client
+Alltick 金融数据 API 客户端
 
-Supports real-time market data queries for stocks, forex, cryptocurrency,
-precious metals, and other financial instruments.
+支持股票、外汇、加密货币、贵金属等金融产品的实时行情数据查询。
 
-Usage:
-    from stock_tick_client import AlltickClient
+使用示例:
+    from alltick_client import AlltickClient
 
     client = AlltickClient()
 
-    # Query K-line
+    # 查询K线
     kline = client.get_kline("700.HK", kline_type=1, query_kline_num=10)
 
-    # Query latest trade prices
+    # 查询最新成交价
     tick = client.get_trade_tick(["700.HK", "AAPL.US"])
 
-    # Query order book
+    # 查询盘口
     depth = client.get_depth_tick(["700.HK"])
 
-    # Get stock basic info
+    # 获取股票基础信息
     info = client.get_static_info(["700.HK"])
 """
 
@@ -39,34 +38,34 @@ except ImportError:
 
 
 class KlineType(IntEnum):
-    """K-line type enumeration"""
-    MINUTE_1 = 1      # 1-minute
-    MINUTE_5 = 2      # 5-minute
-    MINUTE_15 = 3     # 15-minute
-    MINUTE_30 = 4     # 30-minute
-    HOUR_1 = 5        # 1-hour
-    HOUR_2 = 6        # 2-hour (not supported for stocks)
-    HOUR_4 = 7        # 4-hour (not supported for stocks)
-    DAY = 8           # Daily
-    WEEK = 9          # Weekly
-    MONTH = 10        # Monthly
+    """K线类型枚举"""
+    MINUTE_1 = 1      # 1分钟K
+    MINUTE_5 = 2      # 5分钟K
+    MINUTE_15 = 3     # 15分钟K
+    MINUTE_30 = 4     # 30分钟K
+    HOUR_1 = 5        # 小时K
+    HOUR_2 = 6        # 2小时K (股票不支持)
+    HOUR_4 = 7        # 4小时K (股票不支持)
+    DAY = 8           # 日K
+    WEEK = 9          # 周K
+    MONTH = 10        # 月K
 
 
 class AdjustType(IntEnum):
-    """Adjustment type enumeration"""
-    NONE = 0          # No adjustment (ex-rights)
-    FRONT = 1         # Front adjustment
+    """复权类型枚举"""
+    NONE = 0          # 除权
+    FRONT = 1         # 前复权
 
 
 class MarketType(IntEnum):
-    """Market type enumeration"""
-    STOCK = 1         # Stocks (US, HK, A-shares, indices)
-    FOREX_CRYPTO = 2  # Forex, crypto, precious metals, commodities
+    """市场类型枚举"""
+    STOCK = 1         # 股票 (美股、港股、A股、大盘)
+    FOREX_CRYPTO = 2  # 外汇、加密货币、贵金属、商品
 
 
 @dataclass
 class APIConfig:
-    """API configuration"""
+    """API 配置"""
     stock_base_url: str = "https://quote.alltick.co/quote-stock-b-api"
     forex_crypto_base_url: str = "https://quote.alltick.co/quote-b-api"
     timeout: int = 30
@@ -74,15 +73,14 @@ class APIConfig:
 
 class AlltickClient:
     """
-    Alltick Financial Data API Client
+    Alltick 金融数据 API 客户端
 
-    Supports fetching K-line data, latest trade prices, order book depth,
-    and stock basic information.
+    支持获取K线数据、最新成交价、盘口深度、股票基础信息等。
 
-    Token priority:
-        1. Token passed to constructor
-        2. ALLTICK_TOKEN environment variable
-        3. tickProvider.token in ~/.c4alpha/config.toml
+    Token 优先级:
+        1. 构造函数传入的 token
+        2. 环境变量 ALLTICK_TOKEN
+        3. 配置文件 ~/.c4alpha/config.toml 中的 [[tick.providers]] (name="alltick")
     """
 
     def __init__(
@@ -91,36 +89,44 @@ class AlltickClient:
         config: Optional[APIConfig] = None
     ):
         """
-        Initialize the client
+        初始化客户端
 
         Args:
-            token: API Token, if not provided will be read from config or env
-            config: API configuration, defaults to default config
+            token: API Token，如果不传则从配置文件或环境变量读取
+            config: API 配置，默认使用默认配置
         """
         self.config = config or APIConfig()
         self._token = token or self._load_token()
 
     def _load_token(self) -> str:
         """
-        Load Token from config file or environment variable
+        从配置文件或环境变量加载 Token
 
         Returns:
-            Token string
+            Token 字符串
 
         Raises:
-            ValueError: If token cannot be found
+            ValueError: 如果找不到 Token
         """
-        # 1. Try environment variable
+        # 1. 尝试从环境变量读取
         token = os.environ.get("ALLTICK_TOKEN")
         if token:
             return token
 
-        # 2. Try config file
+        # 2. 尝试从配置文件读取
         config_path = os.path.expanduser("~/.c4alpha/config.toml")
         if os.path.exists(config_path):
             try:
                 with open(config_path, "rb") as f:
                     config_data = tomllib.load(f)
+                    # 新格式: [[tick.providers]] 数组表
+                    providers = config_data.get("tick", {}).get("providers", [])
+                    for provider in providers:
+                        if provider.get("name") == "alltick":
+                            token = provider.get("api-key")
+                            if token:
+                                return token
+                    # 兼容旧格式: tickProvider.token
                     token = config_data.get("tickProvider", {}).get("token")
                     if token:
                         return token
@@ -128,36 +134,39 @@ class AlltickClient:
                 pass
 
         raise ValueError(
-            "API Token not found. Please provide Token via one of:\n"
-            "1. Pass token parameter to constructor\n"
-            "2. Set ALLTICK_TOKEN environment variable\n"
-            "3. Configure tickProvider.token in ~/.c4alpha/config.toml"
+            "未找到 API Token。请通过以下方式之一提供 Token:\n"
+            "1. 在构造函数中传入 token 参数\n"
+            "2. 设置环境变量 ALLTICK_TOKEN\n"
+            "3. 在 ~/.c4alpha/config.toml 中配置:\n"
+            "   [[tick.providers]]\n"
+            "   name = \"alltick\"\n"
+            "   api-key = \"your-api-key\""
         )
 
     def _get_base_url(self, market: MarketType) -> str:
-        """Get base URL for the corresponding market"""
+        """获取对应市场的基础 URL"""
         if market == MarketType.STOCK:
             return self.config.stock_base_url
         return self.config.forex_crypto_base_url
 
     def _generate_trace(self) -> str:
-        """Generate unique trace ID"""
+        """生成唯一的追踪 ID"""
         return str(uuid.uuid4())
 
     def _detect_market(self, code: str) -> MarketType:
         """
-        Auto-detect market type based on product code
+        根据股票代码自动检测市场类型
 
         Args:
-            code: Product code, e.g., "700.HK", "AAPL.US", "BTCUSD"
+            code: 股票代码，如 "700.HK", "AAPL.US", "BTCUSD"
 
         Returns:
-            Market type
+            市场类型
         """
-        # Stock code format: XXX.HK, XXX.US, XXX.SH, XXX.SZ
+        # 股票代码格式: XXX.HK, XXX.US, XXX.SH, XXX.SZ
         if code.endswith((".HK", ".US", ".SH", ".SZ")):
             return MarketType.STOCK
-        # Forex, crypto, etc.
+        # 外汇、加密货币等
         return MarketType.FOREX_CRYPTO
 
     def _make_get_request(
@@ -167,18 +176,18 @@ class AlltickClient:
         market: Optional[MarketType] = None
     ) -> Dict[str, Any]:
         """
-        Send GET request
+        发送 GET 请求
 
         Args:
-            endpoint: API endpoint
-            data: Request data
-            market: Market type, auto-detected if not provided
+            endpoint: API 端点
+            data: 请求数据
+            market: 市场类型，如果不传则自动检测
 
         Returns:
-            API response data
+            API 响应数据
         """
         if market is None:
-            # Detect market from codes in data
+            # 从 data 中的 codes 检测市场
             codes = data.get("data", {}).get("symbol_list", [])
             if codes:
                 market = self._detect_market(codes[0].get("code", ""))
@@ -210,18 +219,18 @@ class AlltickClient:
         market: Optional[MarketType] = None
     ) -> Dict[str, Any]:
         """
-        Send POST request
+        发送 POST 请求
 
         Args:
-            endpoint: API endpoint
-            data: Request data
-            market: Market type
+            endpoint: API 端点
+            data: 请求数据
+            market: 市场类型
 
         Returns:
-            API response data
+            API 响应数据
         """
         if market is None:
-            # Detect market from data_list in data
+            # 从 data 中的 data_list 检测市场
             data_list = data.get("data", {}).get("data_list", [])
             if data_list:
                 market = self._detect_market(data_list[0].get("code", ""))
@@ -259,34 +268,34 @@ class AlltickClient:
         market: Optional[MarketType] = None
     ) -> Dict[str, Any]:
         """
-        Query single product historical K-line
+        查询单产品历史K线
 
         Args:
-            code: Product code, e.g., "700.HK", "AAPL.US"
-            kline_type: K-line type, see KlineType enum
-            query_kline_num: Number of K-lines to query, max 500
-            kline_timestamp_end: End timestamp, 0 means from latest
-            adjust_type: Adjustment type, see AdjustType enum
-            market: Market type, auto-detected if not provided
+            code: 产品代码，如 "700.HK", "AAPL.US"
+            kline_type: K线类型，见 KlineType 枚举
+            query_kline_num: 查询K线数量，最多500根
+            kline_timestamp_end: 结束时间戳，0表示从最新开始
+            adjust_type: 复权类型，见 AdjustType 枚举
+            market: 市场类型，如果不传则自动检测
 
         Returns:
-            K-line data containing:
-            - code: Product code
-            - kline_type: K-line type
-            - kline_list: K-line list, each containing:
-                - timestamp: Timestamp
-                - open_price: Open price
-                - close_price: Close price
-                - high_price: High price
-                - low_price: Low price
-                - volume: Volume
-                - turnover: Turnover
+            K线数据，包含:
+            - code: 产品代码
+            - kline_type: K线类型
+            - kline_list: K线列表，每根K线包含:
+                - timestamp: 时间戳
+                - open_price: 开盘价
+                - close_price: 收盘价
+                - high_price: 最高价
+                - low_price: 最低价
+                - volume: 成交量
+                - turnover: 成交额
 
         Example:
             >>> client = AlltickClient()
             >>> kline = client.get_kline("700.HK", kline_type=1, query_kline_num=10)
             >>> for k in kline["data"]["kline_list"]:
-            ...     print(f"Time: {k['timestamp']}, Close: {k['close_price']}")
+            ...     print(f"时间: {k['timestamp']}, 收盘价: {k['close_price']}")
         """
         if market is None:
             market = self._detect_market(code)
@@ -314,20 +323,20 @@ class AlltickClient:
         market: Optional[MarketType] = None
     ) -> Dict[str, Any]:
         """
-        Batch query latest K-lines for multiple products
+        批量查询多个产品的最新K线
 
-        Note: This endpoint can only query the latest 2 K-lines
+        注意: 此接口只能查询最新的2根K线
 
         Args:
-            codes: List of product codes
-            kline_type: K-line type
-            query_kline_num: Number of K-lines to query, max 2
-            kline_timestamp_end: End timestamp
-            adjust_type: Adjustment type
-            market: Market type
+            codes: 产品代码列表
+            kline_type: K线类型
+            query_kline_num: 查询K线数量，最多2根
+            kline_timestamp_end: 结束时间戳
+            adjust_type: 复权类型
+            market: 市场类型
 
         Returns:
-            Batch K-line data
+            批量K线数据
 
         Example:
             >>> client = AlltickClient()
@@ -365,22 +374,22 @@ class AlltickClient:
         market: Optional[MarketType] = None
     ) -> Dict[str, Any]:
         """
-        Query latest trade prices (tick data)
+        查询最新成交价（逐笔tick数据）
 
         Args:
-            codes: List of product codes
-            market: Market type
+            codes: 产品代码列表
+            market: 市场类型
 
         Returns:
-            Trade price data containing:
-            - tick_list: Trade list, each containing:
-                - code: Product code
-                - seq: Sequence number
-                - tick_time: Timestamp
-                - price: Trade price
-                - volume: Volume
-                - turnover: Turnover
-                - trade_direction: Trade direction (0=default, 1=BUY, 2=SELL)
+            成交价数据，包含:
+            - tick_list: 成交列表，每个包含:
+                - code: 产品代码
+                - seq: 序号
+                - tick_time: 时间戳
+                - price: 成交价
+                - volume: 成交量
+                - turnover: 成交额
+                - trade_direction: 交易方向 (0=默认, 1=BUY, 2=SELL)
 
         Example:
             >>> client = AlltickClient()
@@ -406,27 +415,27 @@ class AlltickClient:
         market: Optional[MarketType] = None
     ) -> Dict[str, Any]:
         """
-        Query latest order book
+        查询最新盘口(Order Book)
 
         Args:
-            codes: List of product codes
-            market: Market type
+            codes: 产品代码列表
+            market: 市场类型
 
         Returns:
-            Order book data containing:
-            - tick_list: Order book list, each containing:
-                - code: Product code
-                - seq: Quote sequence number
-                - tick_time: Quote timestamp
-                - bids: Bid list [{price, volume}, ...]
-                - asks: Ask list [{price, volume}, ...]
+            盘口数据，包含:
+            - tick_list: 盘口列表，每个包含:
+                - code: 产品代码
+                - seq: 报价序号
+                - tick_time: 报价时间戳
+                - bids: 买盘列表 [{price, volume}, ...]
+                - asks: 卖盘列表 [{price, volume}, ...]
 
         Example:
             >>> client = AlltickClient()
             >>> depth = client.get_depth_tick(["700.HK"])
             >>> for t in depth["data"]["tick_list"]:
-            ...     print(f"Bid 1: {t['bids'][0]['price'] if t['bids'] else 'N/A'}")
-            ...     print(f"Ask 1: {t['asks'][0]['price'] if t['asks'] else 'N/A'}")
+            ...     print(f"买一: {t['bids'][0]['price'] if t['bids'] else 'N/A'}")
+            ...     print(f"卖一: {t['asks'][0]['price'] if t['asks'] else 'N/A'}")
         """
         if market is None and codes:
             market = self._detect_market(codes[0])
@@ -445,34 +454,34 @@ class AlltickClient:
         codes: List[str]
     ) -> Dict[str, Any]:
         """
-        Query stock product basic information
+        查询股票产品基础信息
 
-        Note: This endpoint only supports stock products
+        注意: 此接口仅支持股票产品
 
         Args:
-            codes: List of stock codes
+            codes: 股票代码列表
 
         Returns:
-            Stock basic information containing:
-            - static_info_list: Info list, each containing:
-                - symbol: Product code
-                - name_cn: Chinese name
-                - name_en: English name
-                - name_hk: Traditional Chinese name
-                - exchange: Exchange
-                - currency: Trading currency
-                - lot_size: Shares per lot
-                - total_shares: Total shares
-                - circulating_shares: Circulating shares
-                - eps: Earnings per share
-                - bps: Book value per share
-                - dividend_yield: Dividend yield
+            股票基础信息，包含:
+            - static_info_list: 信息列表，每个包含:
+                - symbol: 产品代码
+                - name_cn: 中文名称
+                - name_en: 英文名称
+                - name_hk: 繁体中文名称
+                - exchange: 交易所
+                - currency: 交易币种
+                - lot_size: 每手股数
+                - total_shares: 总股本
+                - circulating_shares: 流通股本
+                - eps: 每股盈利
+                - bps: 每股净资产
+                - dividend_yield: 股息率
 
         Example:
             >>> client = AlltickClient()
             >>> info = client.get_static_info(["700.HK", "AAPL.US"])
             >>> for s in info["data"]["static_info_list"]:
-            ...     print(f"{s['symbol']}: {s['name_en']}")
+            ...     print(f"{s['symbol']}: {s['name_cn']}")
         """
         data = {
             "trace": self._generate_trace(),
@@ -481,12 +490,12 @@ class AlltickClient:
             }
         }
 
-        # static_info only available in stock API
+        # static_info 只有股票 API
         return self._make_get_request("static_info", data, MarketType.STOCK)
 
 
 class APIError(Exception):
-    """API Error"""
+    """API 错误"""
 
     def __init__(self, code: int, message: str, trace: Optional[str] = None):
         self.code = code
@@ -495,30 +504,30 @@ class APIError(Exception):
         super().__init__(f"API Error {code}: {message}")
 
 
-# Convenience functions
+# 便捷函数
 def get_client(token: Optional[str] = None) -> AlltickClient:
     """
-    Get Alltick client instance
+    获取 Alltick 客户端实例
 
     Args:
-        token: API Token, optional
+        token: API Token，可选
 
     Returns:
-        AlltickClient instance
+        AlltickClient 实例
     """
     return AlltickClient(token=token)
 
 
 def get_stock_price(codes: List[str], token: Optional[str] = None) -> Dict[str, Any]:
     """
-    Quick get stock latest prices
+    快速获取股票最新价格
 
     Args:
-        codes: List of stock codes
-        token: API Token, optional
+        codes: 股票代码列表
+        token: API Token，可选
 
     Returns:
-        Price data
+        价格数据
     """
     client = get_client(token)
     return client.get_trade_tick(codes)
@@ -531,33 +540,33 @@ def get_stock_kline(
     token: Optional[str] = None
 ) -> Dict[str, Any]:
     """
-    Quick get stock K-line
+    快速获取股票K线
 
     Args:
-        code: Stock code
-        kline_type: K-line type
-        num: Number of K-lines
-        token: API Token, optional
+        code: 股票代码
+        kline_type: K线类型
+        num: K线数量
+        token: API Token，可选
 
     Returns:
-        K-line data
+        K线数据
     """
     client = get_client(token)
     return client.get_kline(code, kline_type=kline_type, query_kline_num=num)
 
 
 if __name__ == "__main__":
-    # Test code
+    # 测试代码
     import argparse
 
-    parser = argparse.ArgumentParser(description="Alltick Financial Data API Client")
+    parser = argparse.ArgumentParser(description="Alltick 金融数据 API 客户端")
     parser.add_argument("--token", help="API Token")
-    parser.add_argument("--code", default="700.HK", help="Product code")
+    parser.add_argument("--code", default="700.HK", help="产品代码")
     parser.add_argument(
         "--action",
         choices=["kline", "tick", "depth", "info"],
         default="tick",
-        help="Action type"
+        help="操作类型"
     )
 
     args = parser.parse_args()

@@ -5,7 +5,7 @@ Alltick 金融数据 API 客户端
 支持股票、外汇、加密货币、贵金属等金融产品的实时行情数据查询。
 
 使用示例:
-    from stock_tick_client import AlltickClient
+    from alltick_client import AlltickClient
 
     client = AlltickClient()
 
@@ -80,7 +80,7 @@ class AlltickClient:
     Token 优先级:
         1. 构造函数传入的 token
         2. 环境变量 ALLTICK_TOKEN
-        3. 配置文件 ~/.c4alpha/config.toml 中的 tickProvider.token
+        3. 配置文件 ~/.c4alpha/config.toml 中的 [[tick.providers]] (name="alltick")
     """
 
     def __init__(
@@ -119,6 +119,14 @@ class AlltickClient:
             try:
                 with open(config_path, "rb") as f:
                     config_data = tomllib.load(f)
+                    # 新格式: [[tick.providers]] 数组表
+                    providers = config_data.get("tick", {}).get("providers", [])
+                    for provider in providers:
+                        if provider.get("name") == "alltick":
+                            token = provider.get("api-key")
+                            if token:
+                                return token
+                    # 兼容旧格式: tickProvider.token
                     token = config_data.get("tickProvider", {}).get("token")
                     if token:
                         return token
@@ -129,7 +137,10 @@ class AlltickClient:
             "未找到 API Token。请通过以下方式之一提供 Token:\n"
             "1. 在构造函数中传入 token 参数\n"
             "2. 设置环境变量 ALLTICK_TOKEN\n"
-            "3. 在 ~/.c4alpha/config.toml 中配置 tickProvider.token"
+            "3. 在 ~/.c4alpha/config.toml 中配置:\n"
+            "   [[tick.providers]]\n"
+            "   name = \"alltick\"\n"
+            "   api-key = \"your-api-key\""
         )
 
     def _get_base_url(self, market: MarketType) -> str:

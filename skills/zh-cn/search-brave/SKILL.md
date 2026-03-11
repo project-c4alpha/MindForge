@@ -1,5 +1,5 @@
 ---
-name: brave-search
+name: search-brave
 description: Brave Search API 综合搜索技能。支持网页搜索、视频搜索、图片搜索、新闻搜索、AI接地(RAG)、AI答案生成、本地POI查询、查询建议和拼写检查。当用户需要搜索互联网、获取实时信息、进行RAG接地、查找本地商家或需要AI生成答案时，请主动使用此技能。
 ---
 
@@ -7,7 +7,14 @@ description: Brave Search API 综合搜索技能。支持网页搜索、视频�
 
 Brave Search API 提供强大的搜索能力，包括传统搜索和 AI 增强功能。
 
-> **API Key**: 从 https://api.search.brave.com 获取
+> **API Key 配置**: 在 `~/.c4alpha/config.toml` 中配置:
+> ```toml
+> [[search.providers]]
+> name = "brave"
+> api-key = "your-api-key-here"
+> ```
+>
+> **获取 API Key**: https://api.search.brave.com
 >
 > **认证方式**: `X-Subscription-Token: <API_KEY>` header
 
@@ -45,6 +52,35 @@ Brave Search API 提供强大的搜索能力，包括传统搜索和 AI 增强�
 ├── 输入辅助
 │   ├── 自动补全 → suggest
 │   └── 拼写检查 → spellcheck
+```
+
+## 代码使用
+
+使用 `scripts/brave_search_client.py` 中的 `BraveSearchClient` 类来调用 API：
+
+```python
+from scripts.brave_search_client import BraveSearchClient
+
+# 初始化客户端（会自动从 ~/.c4alpha/config.toml 读取 API Key）
+client = BraveSearchClient()
+
+# 网页搜索
+results = client.web_search("python tutorials", count=10)
+
+# 视频搜索
+videos = client.videos_search("rust programming")
+
+# 图片搜索
+images = client.images_search("landscape photography")
+
+# 新闻搜索（过去7天）
+news = client.news_search("AI news", freshness="pw")
+
+# LLM 接地 / RAG
+context = client.llm_context("what is machine learning")
+
+# 查询建议
+suggestions = client.suggest("how to")
 ```
 
 ## 共用参数说明

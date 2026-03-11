@@ -1,5 +1,5 @@
 ---
-name: brave-search
+name: search-brave
 description: Comprehensive Brave Search API skill. Supports web search, video search, image search, news search, AI grounding (RAG), AI answer generation, local POI queries, query suggestions, and spell checking. Use this skill proactively when users need to search the internet, get real-time information, perform RAG grounding, find local businesses, or need AI-generated answers.
 ---
 
@@ -7,7 +7,14 @@ description: Comprehensive Brave Search API skill. Supports web search, video se
 
 Brave Search API provides powerful search capabilities, including traditional search and AI-enhanced features.
 
-> **API Key**: Get one at https://api.search.brave.com
+> **API Key Configuration**: Configure in `~/.c4alpha/config.toml`:
+> ```toml
+> [[search.providers]]
+> name = "brave"
+> api-key = "your-api-key-here"
+> ```
+>
+> **Get API Key**: https://api.search.brave.com
 >
 > **Authentication**: `X-Subscription-Token: <API_KEY>` header
 
@@ -45,6 +52,35 @@ What type of results do you need?
 ├── Input assistance
 │   ├── Autocomplete → suggest
 │   └── Spell checking → spellcheck
+```
+
+## Code Usage
+
+Use the `BraveSearchClient` class from `scripts/brave_search_client.py` to call the API:
+
+```python
+from scripts.brave_search_client import BraveSearchClient
+
+# Initialize client (automatically reads API Key from ~/.c4alpha/config.toml)
+client = BraveSearchClient()
+
+# Web search
+results = client.web_search("python tutorials", count=10)
+
+# Video search
+videos = client.videos_search("rust programming")
+
+# Image search
+images = client.images_search("landscape photography")
+
+# News search (past 7 days)
+news = client.news_search("AI news", freshness="pw")
+
+# LLM grounding / RAG
+context = client.llm_context("what is machine learning")
+
+# Query suggestions
+suggestions = client.suggest("how to")
 ```
 
 ## Common Parameters

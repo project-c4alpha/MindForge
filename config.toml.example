@@ -2,18 +2,34 @@
 # This file contains configuration for various API providers used by skills and commands.
 # Copy this file to ~/.c4alpha/config.toml and fill in your API keys.
 
-[search]
-# Search provider configuration for web search capabilities
+# =============================================================================
+# Search Providers
+# =============================================================================
+# Add multiple search providers by adding more [[search.providers]] blocks
 
-[search.provider.brave]
+[[search.providers]]
+name = "brave"
 # Brave Search API key
 # Get your API key at: https://brave.com/search/api/
 api-key = "your-brave-search-api-key-here"
 
-[tick]
-# Market data provider configuration for real-time stock/forex/crypto quotes
+# Example: Add another search provider
+# [[search.providers]]
+# name = "google"
+# api-key = "your-google-api-key-here"
 
-[tick.provider.alltick]
-# Alltick API token for market data
+# =============================================================================
+# Market Data Providers
+# =============================================================================
+# Add multiple market data providers by adding more [[tick.providers]] blocks
+
+[[tick.providers]]
+name = "alltick"
+# Alltick API token for market data (stocks, forex, crypto)
 # Get your API token at: https://alltick.co/
 api-key = "your-alltick-api-key-here"
+
+# Example: Add another market data provider
+# [[tick.providers]]
+# name = "alpha-vantage"
+# api-key = "your-alpha-vantage-api-key-here"
