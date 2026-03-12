@@ -149,10 +149,10 @@ prompt: |
   Steps:
   1. Navigate to tick-alltick-api skill directory: ~/.claude/skills/tick-alltick-api/scripts/
   2. If dumpDir is provided (storage mode = "local"):
-     python3 alltick_client.py kline {symbol} 1 240 --dump-file "{dumpDir}/tick_1min_{stockName}.json"
-     The script will save K-line data to the specified JSON file.
+     python3 fetch_all_ticks.py --code {symbol} --output-dir "{dumpDir}" --types 1min
+     The script will save K-line data to the dumpDir directory (file name format: tick_1min_{timestamp}.json).
   3. If dumpDir is empty (storage mode = "none"):
-     python3 alltick_client.py kline {symbol} 1 240
+     python3 fetch_all_ticks.py --code {symbol} --types 1min
      Return the K-line data directly without saving to file.
 
   Output: K-line data (file path if dumpDir provided, or direct JSON output)

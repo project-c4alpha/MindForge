@@ -149,10 +149,10 @@ prompt: |
   步骤：
   1. 进入 tick-alltick-api 技能目录：~/.claude/skills/tick-alltick-api/scripts/
   2. 如果 dumpDir 有值（存储模式 = "local"）：
-     python3 alltick_client.py kline {symbol} 1 240 --dump-file "{dumpDir}/tick_1min_{stockName}.json"
-     脚本会将 K 线数据保存到指定的 JSON 文件。
+     python3 fetch_all_ticks.py --code {symbol} --output-dir "{dumpDir}" --types 1min
+     脚本会将 K 线数据保存到 dumpDir 目录中（文件名格式：tick_1min_{timestamp}.json）。
   3. 如果 dumpDir 为空（存储模式 = "none"）：
-     python3 alltick_client.py kline {symbol} 1 240
+     python3 fetch_all_ticks.py --code {symbol} --types 1min
      直接返回 K 线数据，不保存到文件。
 
   输出：K 线数据（如果 dumpDir 有值则为文件路径，否则为直接 JSON 输出）
